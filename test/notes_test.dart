@@ -28,7 +28,7 @@ void main() async {
       puzzle.board().getRow(i).forEach((cell) {
         for(int i = 0; i < cell.getNotes().length; i++){
           expect(cell.getNotes()[i].getValue(), i+1);
-          cell.getNotes()[i].setDisplayed(true);
+          cell.getNotes()[i].toggleDisplayed();
           expect(cell.getNotes()[i].getDisplayed(), true);
         }
       });
