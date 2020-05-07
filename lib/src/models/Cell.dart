@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:sudoku_api/src/models/Note.dart';
+
 import '../logic/PuzzleUtils.dart';
 import 'ICell.dart';
 import 'Position.dart';
@@ -21,6 +23,8 @@ class Cell extends ICell {
 
   StreamController _onChange;
 
+  List<Note> _notes;
+
   /// Constructs new Cell at [position] with optional [_value]
   /// If value is provided, then cell is flagged as prefilled
   Cell(position, [this._value = 0]) : super(position, true) {
@@ -28,6 +32,9 @@ class Cell extends ICell {
     _isValid = _isPrefill;
 
     _onChange = new StreamController.broadcast();
+
+    /// creates a list of notes that are not displayed by default
+    _notes = List.generate(9, (index) => Note(index+1));
   }
 
   Cell._(
@@ -36,11 +43,13 @@ class Cell extends ICell {
       bool isValid,
       bool isMarkup,
       bool isPristine,
+        List<Note> notes,
       Position position})
       : this._isPrefill = isPrefill,
         this._value = value,
         this._isValid = isValid,
         this._isMarkup = isMarkup,
+        this._notes = notes,
         super(position, isPristine) {
     _onChange = new StreamController.broadcast();
   }
@@ -53,9 +62,8 @@ class Cell extends ICell {
         isValid: json["is_valid"] == null ? null : json["is_valid"],
         isMarkup: json["is_markup"] == null ? null : json["is_markup"],
         isPristine: json["is_pristine"] == null ? null : json["is_pristine"],
-        position: json["position"] == null
-            ? null
-            : Position.fromMap(json["position"]),
+        position: json["position"] == null ? null : Position.fromMap(json["position"]),
+        notes: json["notes"] == null ? null : List<Note>.from(json["notes"].map((x) => Note.fromMap(x))),
       );
 
   Map<String, dynamic> toMap() => {
@@ -65,6 +73,7 @@ class Cell extends ICell {
         "is_markup": _isMarkup == null ? null : _isMarkup,
         "is_pristine": isPristine == null ? null : isPristine,
         "position": position == null ? null : position.toMap(),
+        "notes": _notes == null ? null : List<dynamic>.from(_notes.map((x) => x.toMap())),
       };
 
   /// Sets [value] of cell while poking [_onChange]
@@ -108,6 +117,8 @@ class Cell extends ICell {
   bool markup() => this._isMarkup;
 
   Position getPosition() => position;
+
+  List<Note> getNotes() => _notes;
 
   /// Equitable cells, determined by position
   @override
